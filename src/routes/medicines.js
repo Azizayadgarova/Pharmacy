@@ -11,35 +11,30 @@ import {
   getExpiringSoon,
   getExpiredMedicines,
 } from "../controllers/medicine.controller.js";
+import { protect } from "../middlewares/authMiddleware.js"; // 🛡 qo‘shish kerak
 
 const router = express.Router();
 
-/**
- * ROUTE TARTIBI MUHIM:
- * 1) Statik/konkret yo'llar ("/", "/expiring/soon", "/expired", "/:id/history", "/:id/receive", "/:id/sell")
- * 2) Paramli yo'llar ("/:id", "/:id" uchun PUT/DELETE)
- */
+// ➕ Yangi dori qo‘shish (faqat admin)
+router.post("/", protect, createMedicine);
 
-// ➕ Yangi dori qo'shish
-router.post("/", createMedicine);
-
-// 📋 Barcha dorilar ro'yxati
+// 📋 Barcha dorilar ro'yxati (ochiq yoki xohlasangiz protect bilan)
 router.get("/", listMedicines);
 
-// 📌 Muddati yaqin tugaydigan dorilar (30 kun ichida)
-router.get("/expiring/soon", getExpiringSoon);
+// 📌 Muddati yaqin tugaydigan dorilar
+router.get("/expiring/soon", protect, getExpiringSoon);
 
 // ⛔ Muddati o'tgan dorilar
-router.get("/expired", getExpiredMedicines);
+router.get("/expired", protect, getExpiredMedicines);
 
 // 📦 Omborga dori qo'shish (kirim)
-router.post("/:id/receive", receiveStock);
+router.post("/:id/receive", protect, receiveStock);
 
 // 💊 Dori sotish (chiqim)
-router.post("/:id/sell", sellStock);
+router.post("/:id/sell", protect, sellStock);
 
 // 📜 Dorining kirim/chiqim tarixi
-router.get("/:id/history", async (req, res) => {
+router.get("/:id/history", protect, async (req, res) => {
   try {
     const { limit = 50 } = req.query;
     const items = await StockHistory.find({ medicine: req.params.id })
@@ -53,12 +48,12 @@ router.get("/:id/history", async (req, res) => {
 });
 
 // 🔍 Bitta dori ma'lumotini olish
-router.get("/:id", getMedicine);
+router.get("/:id", protect, getMedicine);
 
 // ✏️ Dori ma'lumotlarini yangilash
-router.put("/:id", updateMedicine);
+router.put("/:id", protect, updateMedicine);
 
 // 🗑️ Dori o'chirish
-router.delete("/:id", deleteMedicine);
+router.delete("/:id", protect, deleteMedicine);
 
 export default router;
