@@ -31,9 +31,36 @@ export const loginAdmin = async (req, res) => {
       secret,
       { expiresIn: "7d" }
     );
+    
 
     res.json({ success: true, token });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
+// ADMIN MA'LUMOTLARINI YANGILASH
+export const updateAdmin = async (req, res) => {
+  try {
+    const adminId = req.admin.id; // token orqali keladi
+    const { username, oldPassword, newPassword } = req.body;
+
+    const admin = await Admin.findById(adminId);
+    if (!admin) return res.status(404).json({ message: "Admin topilmadi" });
+
+    // Agar parolni o'zgartirmoqchi bo'lsa, eski parolni tekshiramiz
+    if (newPassword) {
+      const isMatch = await admin.comparePassword(oldPassword);
+      if (!isMatch) return res.status(401).json({ message: "Eski parol noto‘g‘ri" });
+      admin.password = newPassword; // pre-save hash bo‘ladi
+    }
+
+    // Username o'zgartirish
+    if (username) admin.username = username;
+
+    await admin.save();
+    res.json({ success: true, message: "Admin yangilandi" });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
