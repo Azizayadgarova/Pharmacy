@@ -3,22 +3,28 @@ import jwt from "jsonwebtoken";
 
 export const registerAdmin = async (req, res) => {
   try {
-    // 🔒 BAZADA ADMIN BOR-YO‘QLIGINI TEKSHIRISH
-    const existingAdmin = await Admin.findOne();
-    if (existingAdmin) {
-      return res.status(403).json({ message: "Admin allaqachon yaratilgan" });
+    const existingAdmins = await Admin.find();
+
+    // Agar bazada allaqachon admin bo‘lsa, yangi yaratilmaydi
+    if (existingAdmins.length > 0) {
+      return res.status(403).json({
+        success: false,
+        message: "Admin allaqachon yaratilgan. Yangi admin qo‘shib bo‘lmaydi."
+      });
     }
 
     const { username, password } = req.body;
-
     const admin = await Admin.create({ username, password });
-    res.status(201).json({ success: true, admin: { username: admin.username } });
+
+    res.status(201).json({
+      success: true,
+      message: "Admin muvaffaqiyatli yaratildi.",
+      admin: { username: admin.username }
+    });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
-
-
 // Login (token olish)
 export const loginAdmin = async (req, res) => {
   try {
