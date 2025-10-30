@@ -3,9 +3,13 @@ import jwt from "jsonwebtoken";
 
 export const registerAdmin = async (req, res) => {
   try {
+    // 🔒 BAZADA ADMIN BOR-YO‘QLIGINI TEKSHIRISH
+    const existingAdmin = await Admin.findOne();
+    if (existingAdmin) {
+      return res.status(403).json({ message: "Admin allaqachon yaratilgan" });
+    }
+
     const { username, password } = req.body;
-    const existing = await Admin.findOne({ username });
-    if (existing) return res.status(400).json({ message: "Admin allaqachon mavjud" });
 
     const admin = await Admin.create({ username, password });
     res.status(201).json({ success: true, admin: { username: admin.username } });
@@ -13,6 +17,7 @@ export const registerAdmin = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
 
 // Login (token olish)
 export const loginAdmin = async (req, res) => {
@@ -39,18 +44,3 @@ export const loginAdmin = async (req, res) => {
   }
 };
 // ADMIN MA'LUMOTLARINI YANGILASH
-export const updateAdmin = async (req, res) => {
-  try {
-    const { username, password } = req.body;
-
-    // parolni hash qilish
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    await Admin.updateOne({}, { username, password: hashedPassword });
-
-    res.json({ success: true, message: "Admin yangilandi" });
-  } catch (e) {
-    res.status(500).json({ success: false, message: e.message });
-  }
-};
-
