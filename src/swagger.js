@@ -13,6 +13,9 @@ const options = {
       {
         url: "http://localhost:4000/api", // ⚙️ Lokal server
         description: "Local server",
+      }, {
+        url: "https://pharmacy-kwc9.onrender.com/api", // ⚙️ Lokal server
+        description: "Original server",
       },
     ],
   },
