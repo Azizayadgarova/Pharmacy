@@ -161,7 +161,7 @@ router.post("/:id/sell", protect, sellStock);
  *         name: limit
  *         schema:
  *           type: number
- *         description: Qancha tarix qaytarilsin (default: 50)
+ *         description: "Qancha tarix qaytarilsin (default: 50)"
  *     responses:
  *       200:
  *         description: Tarix ma’lumotlari
