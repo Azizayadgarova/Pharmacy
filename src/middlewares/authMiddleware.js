@@ -1,15 +1,22 @@
 import jwt from "jsonwebtoken";
 
 export const protect = (req, res, next) => {
-  const token = req.headers.authorization?.split(" ")[1];
-
-  if (!token) return res.status(401).json({ message: "Token topilmadi" });
-
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.admin = decoded;
+    // Frontend header: Authorization: Bearer <token>
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({ message: "Token topilmadi yoki noto‘g‘ri format" });
+    }
+
+    const token = authHeader.split(" ")[1];
+
+    const secret = process.env.JWT_SECRET || "defaultsecret";
+    const decoded = jwt.verify(token, secret);
+
+    req.admin = decoded; // decoded.id va decoded.username mavjud
     next();
-  } catch (error) {
-    res.status(401).json({ message: "Noto‘g‘ri token" });
+  } catch (err) {
+    console.error("Auth error:", err.message);
+    res.status(401).json({ message: "Noto‘g‘ri token yoki token muddati tugagan" });
   }
 };
