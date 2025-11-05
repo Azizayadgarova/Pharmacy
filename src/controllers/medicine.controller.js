@@ -11,10 +11,6 @@ export const createMedicine = async (req, res) => {
   }
 };
 
-
-
-
-
 export const listMedicines = async (req, res) => {
   try {
     const { q, company, inStock, expiresBefore, page = 1, limit = 20 } = req.query;
