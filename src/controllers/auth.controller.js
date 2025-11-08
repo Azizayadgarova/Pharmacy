@@ -42,7 +42,7 @@ export const loginAdmin = async (req, res) => {
       secret,
       { expiresIn: "7d" }
     );
-    
+
 
     res.json({ success: true, token });
   } catch (err) {

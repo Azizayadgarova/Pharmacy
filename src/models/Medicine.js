@@ -2,13 +2,13 @@ import mongoose from "mongoose";
 
 const medicineSchema = new mongoose.Schema(
   {
-    name: { type: String, required: true, trim: true },          // nomi
-    company: { type: String, trim: true },                       // firma
-    manufacturedAt: { type: Date, required: true },              // ishlab chiqarilgan sanasi
-    expiryAt: { type: Date },                                    // yaroqlilik muddati (ixtiyoriy)
-    costPrice: { type: Number, required: true, min: 0 },         // o'z narxi
-    sellPrice: { type: Number, required: true, min: 0 },         // sotilish narxi
-    totalReceived: { type: Number, default: 0, min: 0 },         // nechta olib kelingani
+    name: { type: String, required: true, trim: true },         
+    company: { type: String, trim: true },                       
+    manufacturedAt: { type: Date, required: true },              
+    expiryAt: { type: Date },                                    
+    costPrice: { type: Number, required: true, min: 0 },         
+    sellPrice: { type: Number, required: true, min: 0 },         
+    totalReceived: { type: Number, default: 0, min: 0 },         
     totalSold: {
       type: Number,
       default: 0,
@@ -18,16 +18,16 @@ const medicineSchema = new mongoose.Schema(
         message: "Sotilgan miqdor kelgandan ko‘p bo‘la olmaydi"
       }
     },
-    unit: { type: String, default: "piece" },                    // o'lchov birligi
-    batchNumber: { type: String, trim: true },                   // partiya
-    barcode: { type: String, trim: true },                       // shtrix-kod
-    notes: { type: String, trim: true },                         // izoh
+    unit: { type: String, default: "piece" },                    
+    batchNumber: { type: String, trim: true },                   
+    barcode: { type: String, trim: true },                       
+    notes: { type: String, trim: true },                         
 
-    // 🖼️ Dorining rasmi (link ko‘rinishida)
+    
     img: {
       type: String,
       trim: true,
-      default: "",                                               // agar rasm bo‘lmasa — bo‘sh
+      default: "",                                               
     },
   },
   {
