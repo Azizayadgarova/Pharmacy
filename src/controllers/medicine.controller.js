@@ -1,4 +1,5 @@
 import Medicine from "../models/Medicine.js";
+import { units } from "../models/Medicine.js";
 import StockHistory from "../models/StockHistory.js";
 
 // CREATE
@@ -11,10 +12,7 @@ export const createMedicine = async (req, res) => {
   }
 };
 
-
-
-
-
+// LIST
 export const listMedicines = async (req, res) => {
   try {
     const { q, company, inStock, expiresBefore, page = 1, limit = 20 } = req.query;
@@ -63,7 +61,7 @@ export const deleteMedicine = async (req, res) => {
   res.json({ success: true });
 };
 
-// STOCK: kirim (olib kelish)
+// STOCK: receive
 export const receiveStock = async (req, res) => {
   const { qty = 0, note } = req.body;
   if (qty <= 0) return res.status(400).json({ message: "qty > 0 bo‘lishi kerak" });
@@ -87,61 +85,8 @@ export const receiveStock = async (req, res) => {
 
   res.json({ success: true, currentStock: med.currentStock, item: med });
 };
-export const getExpiringSoon = async (req, res) => {
-  try {
-    const today = new Date();
-    const nextMonth = new Date();
-    nextMonth.setDate(today.getDate() + 30); // 30 kun ichida tugaydiganlar
 
-    const meds = await Medicine.find({
-      expiryAt: { $lte: nextMonth, $gte: today },
-    });
-
-    res.json({
-      success: true,
-      count: meds.length,
-      items: meds,
-    });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-};
-// MUDDATIDAN O'TGAN DORILAR
-export const getExpiredMedicines = async (req, res) => {
-  try {
-    const today = new Date();
-    const { includeZeroStock = "false", page = 1, limit = 20 } = req.query;
-
-    // expiryAt bugundan kichik bo'lganlar
-    const filter = { expiryAt: { $lt: today } };
-
-    // default: qoldig'i bor (stock > 0) dorilarni ko'rsatamiz
-    if (includeZeroStock !== "true") {
-      filter.$expr = { $gt: [{ $subtract: ["$totalReceived", "$totalSold"] }, 0] };
-    }
-
-    const skip = (Number(page) - 1) * Number(limit);
-
-    const items = await Medicine.find(filter)
-      .sort({ expiryAt: 1 })
-      .skip(skip)
-      .limit(Number(limit));
-
-    const total = await Medicine.countDocuments(filter);
-
-    res.json({
-      success: true,
-      total,
-      page: Number(page),
-      limit: Number(limit),
-      items,
-    });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-};
-
-
+// STOCK: sell
 export const sellStock = async (req, res) => {
   const { qty = 0, note } = req.body;
   if (qty <= 0) return res.status(400).json({ message: "qty > 0 bo‘lishi kerak" });
@@ -171,3 +116,45 @@ export const sellStock = async (req, res) => {
   res.json({ success: true, currentStock: med.currentStock, item: med });
 };
 
+// Expiring soon
+export const getExpiringSoon = async (req, res) => {
+  try {
+    const today = new Date();
+    const nextMonth = new Date();
+    nextMonth.setDate(today.getDate() + 30);
+
+    const meds = await Medicine.find({
+      expiryAt: { $lte: nextMonth, $gte: today },
+    });
+
+    res.json({ success: true, count: meds.length, items: meds });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// Expired medicines
+export const getExpiredMedicines = async (req, res) => {
+  try {
+    const today = new Date();
+    const { includeZeroStock = "false", page = 1, limit = 20 } = req.query;
+
+    const filter = { expiryAt: { $lt: today } };
+    if (includeZeroStock !== "true") {
+      filter.$expr = { $gt: [{ $subtract: ["$totalReceived", "$totalSold"] }, 0] };
+    }
+
+    const skip = (Number(page) - 1) * Number(limit);
+
+    const items = await Medicine.find(filter)
+      .sort({ expiryAt: 1 })
+      .skip(skip)
+      .limit(Number(limit));
+
+    const total = await Medicine.countDocuments(filter);
+
+    res.json({ success: true, total, page: Number(page), limit: Number(limit), items });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
