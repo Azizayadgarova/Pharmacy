@@ -143,31 +143,21 @@ export const getExpiredMedicines = async (req, res) => {
 
 
 export const sellStock = async (req, res) => {
-  const { qty = 0, note } = req.body;
+  const { qty = 0 } = req.body;
   if (qty <= 0) return res.status(400).json({ message: "qty > 0 bo‘lishi kerak" });
 
   const med = await Medicine.findById(req.params.id);
   if (!med) return res.status(404).json({ message: "Topilmadi" });
 
-  if (med.totalSold + Number(qty) > med.totalReceived) {
-    return res.status(400).json({ message: "Qoldiq yetarli emas" });
+  if (med.totalSold + qty > med.totalReceived) {
+    return res.status(400).json({ message: "Yetarli miqdor yo‘q" });
   }
 
-  const before = med.currentStock;
-  med.totalSold += Number(qty);
+  med.totalSold += qty;
+  med.soldCount += 1; // 🆕 har sotuvda bittaga oshadi
+
   await med.save();
-
-  await StockHistory.create({
-    medicine: med._id,
-    type: "sell",
-    qty: Number(qty),
-    beforeStock: before,
-    afterStock: med.currentStock,
-    unitPrice: med.sellPrice,
-    unitCost: med.costPrice,
-    note
-  });
-
-  res.json({ success: true, currentStock: med.currentStock, item: med });
+  res.json({ success: true, item: med });
 };
+
 
