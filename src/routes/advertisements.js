@@ -12,5 +12,6 @@ router.post("/", protect, createAd);
 
 // DELETE — reklama o‘chirish
 router.delete("/:id", protect, deleteAd);
+console.log("aziza");
 
 export default router;
