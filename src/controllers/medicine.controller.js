@@ -1,5 +1,6 @@
 import Medicine from "../models/Medicine.js";
 import StockHistory from "../models/StockHistory.js";
+import { units, categories } from "../utils/constants.js";
 export const createMedicine = async (req, res) => {
   try {
     const requiredFields = ["name", "costPrice", "sellPrice", "unit", "category", "manufacturedAt"];
