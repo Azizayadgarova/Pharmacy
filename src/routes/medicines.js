@@ -1,5 +1,8 @@
 import express from "express";
 import StockHistory from "../models/StockHistory.js";
+import Medicine from "../models/Medicine.js";
+import { units, categories } from "../utils/constants.js";
+
 import {
   createMedicine,
   listMedicines,
@@ -28,6 +31,13 @@ const router = express.Router();
  *   get:
  *     summary: Barcha dorilar ro‘yxatini olish
  *     tags: [Medicines]
+ *     parameters:
+ *       - in: query
+ *         name: category
+ *         schema:
+ *           type: string
+ *           enum: ["Vitaminlar", "Og‘riq qoldiruvchilar", "Shamollash va Gripp dorilari", "Ona va bola uchun", "Tibbiy texnika", "Go‘zallik mahsulotlari"]
+ *         description: Kategoriyaga ko‘ra filtr
  *     responses:
  *       200:
  *         description: Dorilar ro‘yxati
@@ -90,26 +100,6 @@ router.get("/expired", protect, getExpiredMedicines);
  *     tags: [Medicines]
  *     security:
  *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *         description: Dori ID’si
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               quantity:
- *                 type: number
- *                 example: 100
- *     responses:
- *       200:
- *         description: Kirim muvaffaqiyatli qo‘shildi
  */
 router.post("/:id/receive", protect, receiveStock);
 
@@ -121,25 +111,6 @@ router.post("/:id/receive", protect, receiveStock);
  *     tags: [Medicines]
  *     security:
  *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               quantity:
- *                 type: number
- *                 example: 5
- *     responses:
- *       200:
- *         description: Chiqim muvaffaqiyatli bajarildi
  */
 router.post("/:id/sell", protect, sellStock);
 
@@ -151,20 +122,6 @@ router.post("/:id/sell", protect, sellStock);
  *     tags: [Medicines]
  *     security:
  *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *       - in: query
- *         name: limit
- *         schema:
- *           type: number
- *         description: "Qancha tarix qaytarilsin (default: 50)"
- *     responses:
- *       200:
- *         description: Tarix ma’lumotlari
  */
 router.get("/:id/history", protect, async (req, res) => {
   try {
@@ -187,15 +144,6 @@ router.get("/:id/history", protect, async (req, res) => {
  *     tags: [Medicines]
  *     security:
  *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: Dori topildi
  */
 router.get("/:id", protect, getMedicine);
 
@@ -207,21 +155,6 @@ router.get("/:id", protect, getMedicine);
  *     tags: [Medicines]
  *     security:
  *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/MedicineInput'
- *     responses:
- *       200:
- *         description: Dorining ma’lumotlari yangilandi
  */
 router.put("/:id", protect, updateMedicine);
 
@@ -233,15 +166,6 @@ router.put("/:id", protect, updateMedicine);
  *     tags: [Medicines]
  *     security:
  *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: Dori o‘chirildi
  */
 router.delete("/:id", protect, deleteMedicine);
 
@@ -259,61 +183,37 @@ export default router;
  *     Medicine:
  *       type: object
  *       properties:
- *         _id:
+ *         _id: { type: string }
+ *         name: { type: string }
+ *         company: { type: string }
+ *         costPrice: { type: number }
+ *         sellPrice: { type: number }
+ *         unit: { type: string }
+ *         expiryAt: { type: string, format: date }
+ *         manufacturedAt: { type: string, format: date }
+ *         totalReceived: { type: number }
+ *         totalSold: { type: number }
+ *         img: { type: string }
+ *         notes: { type: string }
+ *         category:
  *           type: string
- *         name:
- *           type: string
- *         company:
- *           type: string
- *         costPrice:
- *           type: number
- *         sellPrice:
- *           type: number
- *         unit:
- *           type: string
- *         expiryAt:
- *           type: string
- *           format: date
- *         manufacturedAt:
- *           type: string
- *           format: date
- *         totalReceived:
- *           type: number
- *         totalSold:
- *           type: number
- *         img:
- *           type: string
- *         notes:
- *           type: string
+ *           enum: ["Vitaminlar", "Og‘riq qoldiruvchilar", "Shamollash va Gripp dorilari", "Ona va bola uchun", "Tibbiy texnika", "Go‘zallik mahsulotlari"]
  *     MedicineInput:
  *       type: object
- *       required:
- *         - name
- *         - costPrice
- *         - sellPrice
+ *       required: [name, costPrice, sellPrice, category]
  *       properties:
- *         name:
+ *         name: { type: string }
+ *         company: { type: string }
+ *         costPrice: { type: number }
+ *         sellPrice: { type: number }
+ *         expiryAt: { type: string, format: date }
+ *         manufacturedAt: { type: string, format: date }
+ *         totalReceived: { type: number }
+ *         totalSold: { type: number }
+ *         unit: { type: string }
+ *         img: { type: string }
+ *         notes: { type: string }
+ *         category:
  *           type: string
- *         company:
- *           type: string
- *         costPrice:
- *           type: number
- *         sellPrice:
- *           type: number
- *         expiryAt:
- *           type: string
- *           format: date
- *         manufacturedAt:
- *           type: string
- *           format: date
- *         totalReceived:
- *           type: number
- *         totalSold:
- *           type: number
- *         unit:
- *           type: string
- *         img:
- *           type: string
- *         notes:
- *           type: string
+ *           enum: ["Vitaminlar", "Og‘riq qoldiruvchilar", "Shamollash va Gripp dorilari", "Ona va bola uchun", "Tibbiy texnika", "Go‘zallik mahsulotlari"]
  */

@@ -1,17 +1,44 @@
 import Medicine from "../models/Medicine.js";
 import StockHistory from "../models/StockHistory.js";
-
-// CREATE
 export const createMedicine = async (req, res) => {
   try {
-    const med = await Medicine.create(req.body);
-    res.status(201).json(med);
+    const requiredFields = ["name", "costPrice", "sellPrice", "unit", "category", "manufacturedAt"];
+
+    for (let field of requiredFields) {
+      if (!req.body[field]) {
+        return res.status(400).json({
+          success: false,
+          message: `Iltimos, barcha majburiy maydonlarni to‘ldiring! Yetishmayotgan: ${field}`
+        });
+      }
+    }
+
+    if (!units.includes(req.body.unit)) {
+      return res.status(400).json({
+        success: false,
+        message: "Noto‘g‘ri dori turi (unit) tanlandi"
+      });
+    }
+
+    if (!categories.includes(req.body.category)) {
+      return res.status(400).json({
+        success: false,
+        message: "Noto‘g‘ri kategoriya tanlandi"
+      });
+    }
+
+    const medicine = await Medicine.create(req.body);
+
+    res.status(201).json({
+      success: true,
+      message: "Dori muvaffaqiyatli qo‘shildi",
+      medicine
+    });
+
   } catch (e) {
-    res.status(400).json({ message: e.message });
+    res.status(500).json({ success: false, message: e.message });
   }
 };
-
-
 
 
 
@@ -46,6 +73,7 @@ export const getMedicine = async (req, res) => {
 };
 
 // UPDATE
+
 export const updateMedicine = async (req, res) => {
   try {
     const med = await Medicine.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
@@ -55,7 +83,6 @@ export const updateMedicine = async (req, res) => {
     res.status(400).json({ message: e.message });
   }
 };
-
 // DELETE
 export const deleteMedicine = async (req, res) => {
   const med = await Medicine.findByIdAndDelete(req.params.id);
