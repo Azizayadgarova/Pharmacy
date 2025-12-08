@@ -3,29 +3,23 @@ import StockHistory from "../models/StockHistory.js";
 import { units, categories } from "../utils/constants.js";
 export const createMedicine = async (req, res) => {
   try {
-    const requiredFields = ["name", "costPrice", "sellPrice", "unit", "category", "manufacturedAt"];
+    const requiredFields = [
+      "name",
+      "originCountry", // ✅ YANGI
+      "costPrice",
+      "sellPrice",
+      "unit",
+      "category",
+      "manufacturedAt"
+    ];
 
     for (let field of requiredFields) {
       if (!req.body[field]) {
         return res.status(400).json({
           success: false,
-          message: `Iltimos, barcha majburiy maydonlarni to‘ldiring! Yetishmayotgan: ${field}`
+          message: `Majburiy maydon yetishmayapti: ${field}`
         });
       }
-    }
-
-    if (!units.includes(req.body.unit)) {
-      return res.status(400).json({
-        success: false,
-        message: "Noto‘g‘ri dori turi (unit) tanlandi"
-      });
-    }
-
-    if (!categories.includes(req.body.category)) {
-      return res.status(400).json({
-        success: false,
-        message: "Noto‘g‘ri kategoriya tanlandi"
-      });
     }
 
     const medicine = await Medicine.create(req.body);
@@ -35,11 +29,14 @@ export const createMedicine = async (req, res) => {
       message: "Dori muvaffaqiyatli qo‘shildi",
       medicine
     });
-
-  } catch (e) {
-    res.status(500).json({ success: false, message: e.message });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: err.message
+    });
   }
 };
+
 
 
 
