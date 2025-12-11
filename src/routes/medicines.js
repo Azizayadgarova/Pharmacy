@@ -19,8 +19,6 @@ const router = express.Router();
 
 // PUBLIC
 router.get("/", listMedicines);
-
-// PUBLIC — ID bilan olish
 router.get("/:id", getMedicine);
 
 // TOKEN REQUIRED
@@ -32,7 +30,7 @@ router.post("/:id/receive", protect, receiveStock);
 router.post("/:id/sell", protect, sellStock);
 
 // HISTORY — TOKEN REQUIRED
-router.get("/:id/history",  async (req, res) => {
+router.get("/:id/history", protect, async (req, res) => {
   try {
     const { limit = 50 } = req.query;
     const items = await StockHistory.find({ medicine: req.params.id })
